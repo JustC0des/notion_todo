@@ -11,6 +11,11 @@ class NotionPropertyHelper:
     def get_property_by_id(id, data):
         """Get property by id."""
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
+        
+        # Check if the key is valid and exists in the properties
+        if not key or 'properties' not in data or key not in data['properties']:
+            return None  # Return None if the property is missing or invalid
+        
         return NotionPropertyHelper._property(data['properties'][key])
 
     @staticmethod
