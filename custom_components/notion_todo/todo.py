@@ -52,8 +52,6 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
         | TodoListEntityFeature.UPDATE_TODO_ITEM
         | TodoListEntityFeature.DELETE_TODO_ITEM
         | TodoListEntityFeature.SET_DESCRIPTION_ON_ITEM
-        | TodoListEntityFeature.SET_DUE_DATE_ON_ITEM
-        | TodoListEntityFeature.SET_DUE_DATETIME_ON_ITEM
     )
 
     def __init__(
@@ -76,8 +74,13 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
             items = []
             for task in self.coordinator.data['results']:
                 id = task['id']
-                self._status[id] = propHelper.get_property_by_id(TASK_STATUS_PROPERTY, task)
-                status = NOTION_TO_HASS_STATUS[self._status[id]]
+                status_property = propHelper.get_property_by_id(TASK_STATUS_PROPERTY, task)
+                if status_property:
+                    status = NOTION_TO_HASS_STATUS.get(status_property, TodoItemStatus.UNKNOWN)
+                else:
+                    status = TodoItemStatus.UNKNOWN
+
+                self._status[id] = status
 
                 items.append(
                     TodoItem(
@@ -89,7 +92,7 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
                     )
                 )
             self._attr_todo_items = items
-        super()._handle_coordinator_update()
+        self.async_write_ha_state()
 
     async def async_create_todo_item(self, item: TodoItem) -> None:
         """Create a To-do item."""
