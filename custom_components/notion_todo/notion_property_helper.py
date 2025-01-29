@@ -4,24 +4,17 @@ import logging
 
 DATE_FORMAT = '%Y-%m-%d'
 DATETIME_FORMAT = DATE_FORMAT + 'T%H:%M:%S.%f%z'
+
+
 class NotionPropertyHelper:
     """Helper class to parse Notion properties."""
 
     @staticmethod
-    def get_property_by_id(id, data):
-        """Get property by id."""
-        key = NotionPropertyHelper._get_property_key_by_id(id, data)
-        
-        # Check if key is valid and the property exists in the data
-        if not key or 'properties' not in data or key not in data['properties']:
-            return None  # Return None if the property doesn't exist or is missing
-        
-        # Ensure the property is not null
-        property_value = data['properties'].get(key, None)
-        if property_value is None:
-            return None  # Return None if the property value is null or missing
-        
-        return NotionPropertyHelper._property(property_value)
+    def get_property_by_id(key, data):
+        if key in data['properties']:
+            return NotionPropertyHelper._property(data['properties'][key])
+        else:
+            return None
 
     @staticmethod
     def set_property_by_id(id, value, data):
@@ -30,7 +23,8 @@ class NotionPropertyHelper:
             return NotionPropertyHelper.del_property_by_id(id, data)
         key = NotionPropertyHelper._get_property_key_by_id(id, data)
         if key:
-            data['properties'][key] = NotionPropertyHelper._property(data['properties'][key], value)
+            data['properties'][key] = NotionPropertyHelper._property(
+                data['properties'][key], value)
         return data
 
     @staticmethod
@@ -51,7 +45,6 @@ class NotionPropertyHelper:
         if key:
             del data['properties'][key]
         return data
-
 
     @staticmethod
     def _get_property_key_by_id(id, data):
@@ -178,7 +171,7 @@ class NotionPropertyHelper:
         return item_list
 
     @staticmethod
-    def _status(prop, value = None):
+    def _status(prop, value=None):
         if value:
             return {"type": "status", "status": {"id": value}}
         else:

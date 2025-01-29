@@ -18,6 +18,7 @@ from .const import DOMAIN, TASK_STATUS_PROPERTY, TASK_DESCRIPTION_PROPERTY, TASK
 from .coordinator import NotionDataUpdateCoordinator
 from .notion_property_helper import NotionPropertyHelper as propHelper
 
+
 async def async_setup_entry(
     hass: HomeAssistant, entry: ConfigEntry, async_add_entities: AddEntitiesCallback
 ) -> None:
@@ -43,6 +44,7 @@ HASS_TO_NOTION_STATUS = {
     TodoItemStatus.NEEDS_ACTION: STATUS_NOT_STARTED,
     TodoItemStatus.COMPLETED: STATUS_DONE
 }
+
 
 class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoListEntity):
     """A Notion TodoListEntity."""
@@ -74,9 +76,11 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
             items = []
             for task in self.coordinator.data['results']:
                 id = task['id']
-                status_property = propHelper.get_property_by_id(TASK_STATUS_PROPERTY, task)
+                status_property = propHelper.get_property_by_id(
+                    TASK_STATUS_PROPERTY, task)
                 if status_property:
-                    status = NOTION_TO_HASS_STATUS.get(status_property, TodoItemStatus.UNKNOWN)
+                    status = NOTION_TO_HASS_STATUS.get(
+                        status_property, TodoItemStatus.UNKNOWN)
                 else:
                     status = TodoItemStatus.UNKNOWN
 
@@ -87,8 +91,10 @@ class NotionTodoListEntity(CoordinatorEntity[NotionDataUpdateCoordinator], TodoL
                         summary=propHelper.get_property_by_id('title', task),
                         uid=id,
                         status=status,
-                        description=propHelper.get_property_by_id(TASK_DESCRIPTION_PROPERTY, task),
-                        due=propHelper.get_property_by_id(TASK_DATE_PROPERTY, task)
+                        description=propHelper.get_property_by_id(
+                            TASK_DESCRIPTION_PROPERTY, task),
+                        due=propHelper.get_property_by_id(
+                            TASK_DATE_PROPERTY, task)
                     )
                 )
             self._attr_todo_items = items
